@@ -4,4 +4,11 @@ __pycache__/
 files*/
 jupyter/
 
-config*
+# NOTE: No inline comments in .gitignore
+
+# Ignore all files under config folder
+config/*
+
+# Except the following files
+!config/__init__.py
+!config/config_template.py
