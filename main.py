@@ -15,13 +15,12 @@ from logging.handlers import RotatingFileHandler
 import functions
 
 # Python files
-import files
+import merge
 import coin
 import squash
 
 # Config
 import config.config_test as config
-
 
 # Loggers
 log_time = logging.getLogger('log_time')
@@ -62,27 +61,30 @@ def setup_logger(name, filepath, level=logging.INFO, backup=1, format='%(asctime
 def main():
     start_time = datetime.now()
 
+    choose_loggers()
+    log_debug.info("Code starting...")
+
     try:
-        if config.options['Files']:
-            log_debug.info(f'Files started')
-            files.main(config.file_dict, config.excel_dict['columns'])
-        if config.options['Coins']:
-            log_debug.info(f'Coins started')
+        if config.options['merge']:
+            log_debug.info(f'Merge started')
+            merge.main(config.file_dict, config.excel_dict)
+        if config.options['squash']:
+            log_debug.info(f'Squash started')
+            squash.main(config.file_dict, config.excel_dict['columns'])
+        if config.options['coin']:
+            log_debug.info(f'Coin started')
             coin.main(
-                config.file_dict['Binance']['Total']['output'],
-                config.file_dict['Binance']['Coin'],
+                config.file_dict['binance']['total']['output'],
+                config.file_dict['binance']['coin'],
                 config.excel_dict['columns']
             )
-        if config.options['Squash']:
-            log_debug.info(f'Squash started')
-            squash.main()
     except Exception as e:
         traceback.print_exc()
         log_error.exception(e)
         log_time.error(f'Exception occurred')
         log_error.warning(f'\n\n{40*"*"} ^ {datetime.now()}\n')
 
-    log_debug.info("Main code completed\n")
+    log_debug.info("Code ending...\n")
 
     stop_time = datetime.now()
     time_msg = functions.runtime(start_time, stop_time)

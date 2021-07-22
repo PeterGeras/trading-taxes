@@ -1,8 +1,9 @@
 # Python
-import files
+import merge
 
 
-def setup(data):
+# __Private method convention (not strict)
+def __setup(data):
 
     data.insert(loc=0, column='Exchange', value='Binance', allow_duplicates=True)
 
@@ -17,7 +18,7 @@ def setup(data):
     return
 
 
-def setup_deposit_withdraw(data):
+def __setup_deposit_withdraw(data):
 
     data.rename(columns={'Coin': 'Market'}, inplace=True)
 
@@ -33,62 +34,62 @@ def setup_deposit_withdraw(data):
 
 
 def trade():
-    exchange = 'Binance'
-    function = 'Trade'
+    exchange = 'binance'
+    function = 'trade'
 
-    data = files.setup(exchange, function)
-    setup(data)
+    data = merge.setup(exchange, function)
+    __setup(data)
 
     data.insert(loc=1, column='Function', value='Trade', allow_duplicates=True)
 
-    data = files.tidy(data)
-    files.export(data, exchange, function)
+    data = merge.tidy(data)
+    merge.export(data, exchange, function)
 
     return
 
 
 def deposit():
-    exchange = 'Binance'
-    function = 'Deposit'
+    exchange = 'binance'
+    function = 'deposit'
 
-    data = files.setup(exchange, function)
+    data = merge.setup(exchange, function)
 
-    setup_deposit_withdraw(data)
-    setup(data)
+    __setup_deposit_withdraw(data)
+    __setup(data)
 
     data.insert(loc=1, column='Function', value='Deposit', allow_duplicates=True)
     data.insert(loc=2, column='Type', value='BUY', allow_duplicates=True)
 
-    data = files.tidy(data)
-    files.export(data, exchange, function)
+    data = merge.tidy(data)
+    merge.export(data, exchange, function)
 
     return
 
 
 def withdraw():
-    exchange = 'Binance'
-    function = 'Withdraw'
+    exchange = 'binance'
+    function = 'withdraw'
 
-    data = files.setup(exchange, function)
+    data = merge.setup(exchange, function)
 
-    setup_deposit_withdraw(data)
-    setup(data)
+    __setup_deposit_withdraw(data)
+    __setup(data)
 
     data.insert(loc=1, column='Function', value='Withdraw', allow_duplicates=True)
     data.insert(loc=2, column='Type', value='SELL', allow_duplicates=True)
 
-    data = files.tidy(data)
-    files.export(data, exchange, function)
+    data = merge.tidy(data)
+    merge.export(data, exchange, function)
 
     return
 
 
 def total():
-    exchange = 'Binance'
-    function = 'Total'
+    exchange = 'binance'
+    function = 'total'
 
-    data = files.setup(exchange, function)
-    data = files.tidy(data)
-    files.export(data, exchange, function)
+    data = merge.setup(exchange, function)
+    data = merge.tidy(data)
+    merge.export(data, exchange, function)
 
     return
