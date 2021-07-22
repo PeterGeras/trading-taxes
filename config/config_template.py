@@ -1,58 +1,67 @@
 options = {
-    'Files': False,
-    'Coins': True,
-    'Squash': False
+    'files': False,
+    'squash': True,
+    'coins': False
 }
 
 file_dict = {
-    'Exchange_1': {
-        'Deposit': {
-            'input': 'files/Exchange_1/Deposit/*.xlsx',
-            'output': 'files/Exchange_1/_Results-Deposit.xlsx'
+    'exchange_1': {
+        'deposit': {
+            'input': r'files/Exchange_1/Deposit/*.xlsx',
+            'output': r'files/Exchange_1/_Results-Deposit.xlsx'
         },
-        'Trade': {
-            'input': 'files/Exchange_1/Trade/*.xlsx',
-            'output': 'files/Exchange_1/_Results-Trade.xlsx'
+        'trade': {
+            'input': r'files/Exchange_1/Trade/*.xlsx',
+            'output': r'files/Exchange_1/_Results-Trade.xlsx'
         },
-        'Withdraw': {
-            'input': 'files/Exchange_1/Withdraw/*.xlsx',
-            'output': 'files/Exchange_1/_Results-Withdraw.xlsx'
+        'withdraw': {
+            'input': r'files/Exchange_1/Withdraw/*.xlsx',
+            'output': r'files/Exchange_1/_Results-Withdraw.xlsx'
         },
-        'Total': {
-            'input': 'files/Exchange_1/_Results-*.xlsx',
-            'output': 'files/Exchange_1/_Results.xlsx'
+        'total': {
+            'input': r'files/Exchange_1/_Results-*.xlsx',
+            'output': r'files/Exchange_1/_Results.xlsx'
         },
-        'Coin': 'files/Exchange_1/Coin.xlsx'
+        'coin': r'files/Exchange_1/Coin.xlsx'
     },
-    'Exchange_2': {
-        'Deposit': {
-            'input': 'files/Exchange_2/Deposit/*.xlsx',
-            'output': 'files/Exchange_2/_Results-Deposit.xlsx'
+    'exchange_2': {
+        'deposit': {
+            'input': r'files/Exchange_2/Deposit/*.xlsx',
+            'output': r'files/Exchange_2/_Results-Deposit.xlsx'
         },
-        'Trade': {
-            'input': 'files/Exchange_2/Trade/*.xlsx',
-            'output': 'files/Exchange_2/_Results-Trade.xlsx'
+        'trade': {
+            'input': r'files/Exchange_2/Trade/*.xlsx',
+            'output': r'files/Exchange_2/_Results-Trade.xlsx'
         },
-        'Withdraw': {
-            'input': 'files/Exchange_2/Withdraw/*.xlsx',
-            'output': 'files/Exchange_2/_Results-Withdraw.xlsx'
+        'withdraw': {
+            'input': r'files/Exchange_2/Withdraw/*.xlsx',
+            'output': r'files/Exchange_2/_Results-Withdraw.xlsx'
         },
-        'Total': {
-            'input': 'files/Exchange_2/_Results-*.xlsx',
-            'output': 'files/Exchange_2/_Results.xlsx'
+        'total': {
+            'input': r'files/Exchange_2/_Results-*.xlsx',
+            'output': r'files/Exchange_2/_Results.xlsx'
         },
-        'Coin': 'files/Exchange_2/Coin.xlsx'
+        'coin': r'files/Exchange_2/Coin.xlsx'
     },
 }
 
 excel_dict = {
+    'exchange': {
+        'binance': ['Date', 'Market', 'Type', 'Price', 'Amount', 'Total', 'Fee', 'FeeCoin']
+    },
     'columns': {
-        'initial': ['Date', 'Market', 'Type', 'Price', 'Amount', 'Total', 'Fee', 'FeeCoin'],
-        'results': ['Exchange', 'Function',
-                    'Date', 'Market', 'Type', 'Price', 'Amount', 'Total', 'Fee', 'FeeCoin'],
-        'coin': ['Exchange', 'Function', 'Date', 'Market',
+        'files': ['Exchange', 'Function',
+                  'Date', 'Market', 'Type', 'Price', 'Amount', 'Total', 'Fee', 'FeeCoin'],
+        'squash': ['Exchange', 'Function',
+                   'Date', 'Market', 'Type',
+                   'NumOrders',
+                   'Price', 'Amount', 'Total', 'Fee', 'FeeCoin'],
+        'coin': ['Exchange', 'Function',
+                 'Date', 'Market',
                  'CoinTo', 'CoinFrom',
-                 'Type', 'Price', 'Amount', 'Total', 'Fee', 'FeeCoin'],
-        'final': []
+                 'Type',
+
+                 'Price', 'Amount', 'Total', 'Fee', 'FeeCoin'],
+        'cgt': []
     }
 }
