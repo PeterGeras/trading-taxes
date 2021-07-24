@@ -1,5 +1,11 @@
-# Python
+import logging
+
+# Python files
 import merge
+import functions
+
+# Loggers
+log_debug = logging.getLogger('log_debug')
 
 
 # __Private method convention (not strict)
@@ -33,11 +39,14 @@ def __setup_deposit_withdraw(data):
     return
 
 
-def trade():
+def trade(expected_cols):
     exchange = 'binance'
     function = 'trade'
 
     data = merge.setup(exchange, function)
+
+    functions.assertion_columns('Binance trade', expected_cols, data.columns)
+
     __setup(data)
 
     data.insert(loc=1, column='Function', value='Trade', allow_duplicates=True)
@@ -48,11 +57,13 @@ def trade():
     return
 
 
-def deposit():
+def deposit(expected_cols):
     exchange = 'binance'
     function = 'deposit'
 
     data = merge.setup(exchange, function)
+
+    functions.assertion_columns('Binance deposit', expected_cols, data.columns)
 
     __setup_deposit_withdraw(data)
     __setup(data)
@@ -66,11 +77,13 @@ def deposit():
     return
 
 
-def withdraw():
+def withdraw(expected_cols):
     exchange = 'binance'
     function = 'withdraw'
 
     data = merge.setup(exchange, function)
+
+    functions.assertion_columns('Binance withdraw', expected_cols, data.columns)
 
     __setup_deposit_withdraw(data)
     __setup(data)

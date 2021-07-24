@@ -22,3 +22,13 @@ def runtime(start, end):
     print(f'runtime: {runtime_msg}')
 
     return runtime_msg
+
+
+def assertion_columns(name, expected_cols, received_cols):
+    received_cols = list(received_cols)
+
+    assert expected_cols == received_cols, \
+        name + ' columns incorrect. Expected columns vs received:\n' + \
+        '-'.join(expected_cols) + '\n' + '-'.join(received_cols)
+
+    return

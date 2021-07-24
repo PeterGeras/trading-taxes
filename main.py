@@ -2,8 +2,6 @@
 # Peter Geras
 ############################
 
-
-# Import libs
 import os
 from pathlib import Path
 import traceback
@@ -23,9 +21,24 @@ import squash
 import config.config_test as config
 
 # Loggers
+log_folder = r'logs'
 log_time = logging.getLogger('log_time')
 log_error = logging.getLogger('log_error')
 log_debug = logging.getLogger('log_debug')
+
+
+def initialise_logging():
+    # Create the log folder if it does not exist
+    Path(log_folder).mkdir(parents=True, exist_ok=True)
+
+    if config.options['clean_logs']:
+        for f in os.listdir(log_folder):
+            with open(os.path.join(log_folder, f), 'w'):
+                pass
+
+    choose_loggers()
+
+    return
 
 
 def choose_loggers():
@@ -41,9 +54,6 @@ def choose_loggers():
 
 
 def setup_logger(name, filepath, level=logging.INFO, backup=1, format='%(asctime)s - %(levelname)s: %(message)s'):
-    log_folder = r'logs'
-    # Create the log folder if it does not exist
-    Path(log_folder).mkdir(parents=True, exist_ok=True)
     filepath = os.path.join(log_folder, filepath)
 
     handler = RotatingFileHandler(filepath, mode='a', maxBytes=2 * 1024 * 1024,
@@ -58,26 +68,43 @@ def setup_logger(name, filepath, level=logging.INFO, backup=1, format='%(asctime
     return logger
 
 
+def do_tasks():
+    if config.options['merge']:
+        log_debug.info(f'Merge started')
+        merge.main(
+            file_dict=config.file_dict,
+            excel_dict=config.excel_dict
+        )
+
+    if config.options['squash']:
+        log_debug.info(f'Squash started')
+        squash.main(
+            input_file=config.file_dict['merge_exchanges_total_output'],
+            output_file=config.file_dict['squash'],
+            input_cols=config.excel_dict['output']['files'],
+            output_cols=config.excel_dict['output']['squash']
+        )
+
+    if config.options['coin']:
+        log_debug.info(f'Coin started')
+        coin.main(
+            config.file_dict['binance']['total']['output'],
+            config.file_dict['binance']['coin'],
+            config.excel_dict['columns']
+        )
+
+    return
+
+
 def main():
     start_time = datetime.now()
 
-    choose_loggers()
     log_debug.info("Code starting...")
 
+    initialise_logging()
+
     try:
-        if config.options['merge']:
-            log_debug.info(f'Merge started')
-            merge.main(config.file_dict, config.excel_dict)
-        if config.options['squash']:
-            log_debug.info(f'Squash started')
-            squash.main(config.file_dict, config.excel_dict['columns'])
-        if config.options['coin']:
-            log_debug.info(f'Coin started')
-            coin.main(
-                config.file_dict['binance']['total']['output'],
-                config.file_dict['binance']['coin'],
-                config.excel_dict['columns']
-            )
+        do_tasks()
     except Exception as e:
         traceback.print_exc()
         log_error.exception(e)
