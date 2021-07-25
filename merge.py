@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import glob
 import logging
+import warnings
 
 # Python files
 import merge_binance
@@ -51,6 +52,17 @@ def __delete_output_files():
     return
 
 
+# Captures warning when reading excel file
+# UserWarning: Workbook contains no default style, apply openpyxl's default
+# warn("Workbook contains no default style, apply openpyxl's default")
+def read_excel_warnings(file):
+    with warnings.catch_warnings(record=True):
+        warnings.simplefilter("always")
+        df = pd.read_excel(file, engine="openpyxl")
+
+    return df
+
+
 def setup(exchange, function):
     df_total = pd.DataFrame()
 
@@ -58,7 +70,7 @@ def setup(exchange, function):
     files = glob.glob(_file_dict['merge_exchange'][exchange][function]['input'])
 
     for f in files:
-        df = pd.read_excel(f)
+        df = read_excel_warnings(f)
         # Pandas append does not work inplace so needs to be assigned back to itself
         df_total = df_total.append(df, ignore_index=True)
 
@@ -70,7 +82,7 @@ def tidy(data):
     data['Date'] = pd.to_datetime(data['Date'])
     data.sort_values(by=['Date'], inplace=True, ascending=False)
 
-    data = data[_excel_dict['output']['files']]
+    data = data[_excel_dict['output']['merge']]
 
     return data
 
@@ -96,8 +108,6 @@ def merge_exchanges():
     output_file = _file_dict['merge_exchanges_total_output']
     df_total.to_excel(output_file, index=False)
     log_debug.info(f'{output_file = }')
-
-
 
     return
 

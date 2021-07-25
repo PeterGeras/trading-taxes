@@ -31,7 +31,7 @@ def initialise_logging():
     # Create the log folder if it does not exist
     Path(log_folder).mkdir(parents=True, exist_ok=True)
 
-    if config.options['clean_logs']:
+    if config.settings_options['clean_logs']:
         for f in os.listdir(log_folder):
             with open(os.path.join(log_folder, f), 'w'):
                 pass
@@ -69,23 +69,24 @@ def setup_logger(name, filepath, level=logging.INFO, backup=1, format='%(asctime
 
 
 def do_tasks():
-    if config.options['merge']:
+    if config.run_options['merge']:
         log_debug.info(f'Merge started')
         merge.main(
             file_dict=config.file_dict,
             excel_dict=config.excel_dict
         )
 
-    if config.options['squash']:
+    if config.run_options['squash']:
         log_debug.info(f'Squash started')
         squash.main(
             input_file=config.file_dict['merge_exchanges_total_output'],
             output_file=config.file_dict['squash'],
-            input_cols=config.excel_dict['output']['files'],
-            output_cols=config.excel_dict['output']['squash']
+            input_cols=config.excel_dict['output']['merge'],
+            output_cols=config.excel_dict['output']['squash'],
+            squash_frequency=config.settings_options['squash_frequency']
         )
 
-    if config.options['coin']:
+    if config.run_options['coin']:
         log_debug.info(f'Coin started')
         coin.main(
             config.file_dict['binance']['total']['output'],

@@ -10,12 +10,11 @@ import functions
 log_debug = logging.getLogger('log_debug')
 
 
-def squash(df, output_cols):
+def squash(df, output_cols, squash_frequency):
 
-    # Groups the Date by a frequency so orders 1 second apart are joined together
+    # Groups the Date by a frequency so orders 1 second apart are joined together for example
     # Frequencies: Y=year, M=month, W=week, D=day, H=hour, T=minute, S=second, L=millisecond
-    frequency = '1H'
-    date_group_key = pd.Grouper(key='Date', freq=frequency)
+    date_group_key = pd.Grouper(key='Date', freq=squash_frequency)
 
     df_grouped = df.groupby(
         ['Exchange',
@@ -44,7 +43,7 @@ def squash(df, output_cols):
     df_sorted = df_aggregated.reset_index().sort_values(by='Date', ascending=False)
 
     # Converts datetime to date, use if Date column is grouped by days or more
-    if frequency[-1] in ('Y', 'M', 'W', 'D'):
+    if squash_frequency[-1] in ('Y', 'M', 'W', 'D'):
         df_sorted['Date'] = pd.to_datetime(df_sorted['Date']).dt.date
 
     functions.assertion_columns('Squash output', output_cols, df_sorted.columns)
@@ -52,13 +51,19 @@ def squash(df, output_cols):
     return df_sorted
 
 
-def main(input_file, output_file, input_cols, output_cols):
+def main(
+    input_file,
+    output_file,
+    input_cols,
+    output_cols,
+    squash_frequency
+):
     log_debug.info(f'{input_file = }')
     df = pd.read_excel(input_file)
 
     functions.assertion_columns('Squash input', input_cols, df.columns)
 
-    squashed = squash(df, output_cols)
+    squashed = squash(df, output_cols, squash_frequency)
 
     log_debug.info(f'{output_file = }')
     squashed.to_excel(output_file, index=False)
