@@ -6,6 +6,7 @@ import warnings
 
 # Python files
 import merge_binance
+import functions
 
 # Loggers
 log_debug = logging.getLogger('log_debug')
@@ -88,9 +89,16 @@ def tidy(data):
 
 
 def export(data, exchange, function):
+    details = f'{exchange=} - {function=} - rows={len(data.index)}'
 
-    log_debug.info(f'Exporting... {exchange=} - {function=} - rows={len(data.index)}')
+    # Check columns are correct
+    functions.assertion_columns(
+        name=details,
+        expected_cols=_excel_dict['output']['merge'],
+        received_cols=data.columns
+    )
 
+    log_debug.info(details)
     data.to_excel(_file_dict['merge_exchange'][exchange][function]['output'], index=False)
 
     return
@@ -105,9 +113,13 @@ def merge_exchanges():
         # Pandas append does not work inplace so needs to be assigned back to itself
         df_total = df_total.append(df, ignore_index=True)
 
+    # Set columns
+    output_cols = _excel_dict['output']['merge']
+    df = df_total[output_cols]
+
     output_file = _file_dict['merge_exchanges_total_output']
-    df_total.to_excel(output_file, index=False)
     log_debug.info(f'{output_file = }')
+    df.to_excel(output_file, index=False)
 
     return
 

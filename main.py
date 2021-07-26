@@ -45,7 +45,7 @@ def choose_loggers():
     # Verbose runtime logging with level=logging.DEBUG
     setup_logger('log_time', 'program_runtime.log', format='%(asctime)s: %(message)s', level=logging.DEBUG)
 
-    setup_logger('log_error', 'error.log')
+    setup_logger('log_error', 'error.log', level=logging.DEBUG)
 
     # If debugging is required, uncomment this logger
     setup_logger('log_debug', 'debug.log', level=logging.INFO)
@@ -53,7 +53,7 @@ def choose_loggers():
     return True
 
 
-def setup_logger(name, filepath, level=logging.INFO, backup=1, format='%(asctime)s - %(levelname)s: %(message)s'):
+def setup_logger(name, filepath, level, backup=1, format='%(asctime)s - %(levelname)s: %(message)s'):
     filepath = os.path.join(log_folder, filepath)
 
     handler = RotatingFileHandler(filepath, mode='a', maxBytes=2 * 1024 * 1024,
@@ -71,6 +71,7 @@ def setup_logger(name, filepath, level=logging.INFO, backup=1, format='%(asctime
 def do_tasks():
     if config.run_options['merge']:
         log_debug.info(f'Merge started')
+
         merge.main(
             file_dict=config.file_dict,
             excel_dict=config.excel_dict
@@ -78,21 +79,30 @@ def do_tasks():
 
     if config.run_options['squash']:
         log_debug.info(f'Squash started')
+
         squash.main(
-            input_file=config.file_dict['merge_exchanges_total_output'],
-            output_file=config.file_dict['squash'],
-            input_cols=config.excel_dict['output']['merge'],
-            output_cols=config.excel_dict['output']['squash'],
+            file_dict=config.file_dict,
+            excel_cols=config.excel_dict['output'],
             squash_frequency=config.settings_options['squash_frequency']
         )
 
     if config.run_options['coin']:
         log_debug.info(f'Coin started')
+
         coin.main(
-            config.file_dict['binance']['total']['output'],
-            config.file_dict['binance']['coin'],
-            config.excel_dict['columns']
+            file_dict=config.file_dict,
+            excel_cols=config.excel_dict['output']
         )
+
+    return
+
+
+def print_errors(error, info):
+    traceback.print_exc()
+    log_error.info(info + '\n')
+    log_error.exception(error)
+    log_error.debug(f'\n\n{40*"*"} ^ {datetime.now()}\n')
+    log_time.error(info)
 
     return
 
@@ -106,11 +116,14 @@ def main():
 
     try:
         do_tasks()
+    except FileNotFoundError as e:
+        print_errors(e, 'A required file is missing.')
+    except PermissionError as e:
+        print_errors(e, 'Permission denied. A file is open and needs to be closed.')
+    except AssertionError as e:
+        print_errors(e, 'Asserted a truth that failed.')
     except Exception as e:
-        traceback.print_exc()
-        log_error.exception(e)
-        log_time.error(f'Exception occurred')
-        log_error.warning(f'\n\n{40*"*"} ^ {datetime.now()}\n')
+        print_errors(e, 'Exception occurred')
 
     log_debug.info("Code ending...\n")
 

@@ -16,7 +16,7 @@ def __setup(data):
     data.rename(
         columns={
             'Date(UTC)': 'Date',
-            'Fee Coin': 'FeeCoin'
+            'Fee Coin': 'Fee_Coin'
         },
         inplace=True
     )
@@ -30,7 +30,7 @@ def __setup_deposit_withdraw(data):
 
     data.insert(loc=3, column='Price', value=1, allow_duplicates=True)
     data.insert(loc=5, column='Total', value=data['Amount']*data['Price'], allow_duplicates=True)
-    data.insert(loc=6, column='FeeCoin', value=data['Market'], allow_duplicates=True)
+    data.insert(loc=6, column='Fee_Coin', value=data['Market'], allow_duplicates=True)
 
     data.rename(columns={'TransactionFee': 'Fee'}, inplace=True)
 

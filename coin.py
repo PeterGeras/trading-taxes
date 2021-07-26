@@ -1,8 +1,15 @@
+import os
 import pandas as pd
 import numpy as np
-from datetime import datetime
+import logging
 import cryptocompare
 from currency_converter import CurrencyConverter
+
+# Python files
+import functions
+
+# Loggers
+log_debug = logging.getLogger('log_debug')
 
 
 def get_euro_value(base, total, date):
@@ -45,58 +52,72 @@ def coin_name_split(coin_string):
     return coins
 
 
-def market_split(coin_string):
+def market_split(coin_string, trade_type):
     market = {
-        'base': np.nan,
-        'quote': np.nan
+        'CoinTo': np.nan,
+        'CoinFrom': np.nan,
+        'Amount_Coin': np.nan,
+        'Total_Coin': np.nan
     }
 
     coins = coin_name_split(coin_string)
 
-    if len(coins) == 2:
-        market['base'] = coins[1]
-        market['quote'] = coins[0]
+    market['Amount_Coin'] = coins[0]
+
+    if len(coins) == 1:
+        market['Total_Coin'] = coins[0]
+    else:
+        market['Total_Coin'] = coins[1]
+
+    if trade_type == 'BUY':
+        market['CoinTo'] = market['Amount_Coin']
+        market['CoinFrom'] = market['Total_Coin']
+    else:
+        market['CoinTo'] = market['Total_Coin']
+        market['CoinFrom'] = market['Amount_Coin']
 
     return market
 
 
-def new_cols(df):
-    df.insert(loc=4, column='Quote',
-              value=df.apply(lambda row: market_split(row['Market'])['quote'], axis=1),
-              allow_duplicates=True)
+def pairs(df):
+    applied_df = df.apply(lambda row: market_split(row['Market'], row['Type']), axis='columns', result_type='expand')
+    df = pd.concat([df, applied_df], axis='columns')
 
-    df.insert(loc=8, column='Base',
-              value=df.apply(lambda row: market_split(row['Market'])['base'], axis=1),
-              allow_duplicates=True)
+    return df
 
-    df.insert(loc=10, column='Total_EURO',
-              value=df.apply(lambda row: get_euro_value(row['Base'], row['Total'], row['Date']), axis=1),
-              allow_duplicates=True)
 
-    df.insert(loc=13, column='Fee_EURO',
-              value=df.apply(lambda row: get_euro_value(row['FeeCoin'], row['Fee'], row['Date']), axis=1),
-              allow_duplicates=True)
-
+def fiat(df):
     c = CurrencyConverter(fallback_on_missing_rate=True)
 
-    df.insert(loc=11, column='Total_AUD',
-              value=df.apply(lambda row: get_aud_value(c, row['Total_EURO'], row['Date']), axis=1),
-              allow_duplicates=True)
-
-    df.insert(loc=15, column='Fee_AUD',
-              value=df.apply(lambda row: get_aud_value(c, row['Fee_EURO'], row['Date']), axis=1),
-              allow_duplicates=True)
+    df['Total_EURO'] = df.apply(lambda row: get_euro_value(row['Total_Coin'], row['Total'], row['Date']), axis=1)
+    df['Total_AUD'] = df.apply(lambda row: get_aud_value(c, row['Total_EURO'], row['Date']), axis=1)
+    df['Fee_EURO'] = df.apply(lambda row: get_euro_value(row['Fee_Coin'], row['Fee'], row['Date']), axis=1)
+    df['Fee_AUD'] = df.apply(lambda row: get_aud_value(c, row['Fee_EURO'], row['Date']), axis=1)
 
     return
 
 
-def main(input_file, output_file, excel_cols):
+def main(file_dict, excel_cols):
+    input_file = file_dict['squash']
+    input_cols = excel_cols['squash']
+
+    log_debug.info(f'{input_file = }')
     df = pd.read_excel(input_file)
 
-    new_cols(df)
+    functions.assertion_columns('Coin input', input_cols, df.columns)
+
+    df = pairs(df)
+    fiat(df)
 
     # Drop NaN's that could have been caught
-    df = df.dropna()
+    df.dropna(how='all')
+
+    # Set columns
+    output_cols = excel_cols['coin']
+    df = df[output_cols]
+
+    output_file = file_dict['coin']
+    log_debug.info(f'{output_file = }')
     df.to_excel(output_file, index=False)
 
     return

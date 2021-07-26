@@ -47,21 +47,21 @@ file_dict = {
 
 excel_dict = {
     'exchange': {
-        'binance': ['Date', 'Market', 'Type', 'Price', 'Amount', 'Total', 'Fee', 'FeeCoin']
+        'binance': ['Date', 'Market', 'Type', 'Price', 'Amount', 'Total', 'Fee', 'Fee_Coin']
     },
     'columns': {
         'files': ['Exchange', 'Function',
-                  'Date', 'Market', 'Type', 'Price', 'Amount', 'Total', 'Fee', 'FeeCoin'],
+                  'Date', 'Market', 'Type', 'Price', 'Amount', 'Total', 'Fee', 'Fee_Coin'],
         'squash': ['Exchange', 'Function',
                    'Date', 'Market', 'Type',
                    'NumOrders',
-                   'Price', 'Amount', 'Total', 'Fee', 'FeeCoin'],
+                   'Price', 'Amount', 'Total', 'Fee', 'Fee_Coin'],
         'coin': ['Exchange', 'Function',
                  'Date', 'Market',
                  'CoinTo', 'CoinFrom',
                  'Type',
 
-                 'Price', 'Amount', 'Total', 'Fee', 'FeeCoin'],
+                 'Price', 'Amount', 'Total', 'Fee', 'Fee_Coin'],
         'cgt': []
     }
 }
