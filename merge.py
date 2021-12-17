@@ -1,12 +1,15 @@
 import os
 import pandas as pd
+import numpy as np
 import glob
 import logging
 import warnings
 
 # Python files
-import merge_binance
 import functions
+import merge_binance
+import merge_bittrex
+import merge_poloniex
 
 # Loggers
 log_debug = logging.getLogger('log_debug')
@@ -53,13 +56,33 @@ def __delete_output_files():
     return
 
 
+def __market_split(row):
+    # print(row)
+    market = {
+        'Amount_Coin': np.nan,
+        'Total_Coin': np.nan
+    }
+
+    if row['Type'].casefold() == 'buy':
+        market['Amount_Coin'] = row['CoinTo']
+        market['Total_Coin'] = row['CoinFrom']
+    else:
+        market['Amount_Coin'] = row['CoinFrom']
+        market['Total_Coin'] = row['CoinTo']
+
+    return market
+
+
 # Captures warning when reading excel file
 # UserWarning: Workbook contains no default style, apply openpyxl's default
 # warn("Workbook contains no default style, apply openpyxl's default")
-def read_excel_warnings(file):
+def read_file(file):
     with warnings.catch_warnings(record=True):
         warnings.simplefilter("always")
-        df = pd.read_excel(file, engine="openpyxl")
+        if file.casefold().endswith(('.xls', '.xlsx')):
+            df = pd.read_excel(file, engine="openpyxl")
+        elif file.casefold().endswith('.csv'):
+            df = pd.read_csv(file)
 
     return df
 
@@ -71,16 +94,20 @@ def setup(exchange, function):
     files = glob.glob(_file_dict['merge_exchange'][exchange][function]['input'])
 
     for f in files:
-        df = read_excel_warnings(f)
+        df = read_file(f)
         # Pandas append does not work inplace so needs to be assigned back to itself
         df_total = df_total.append(df, ignore_index=True)
 
     return df_total
 
 
-def tidy(data):
+def tidy(data, date_format=None):
 
-    data['Date'] = pd.to_datetime(data['Date'])
+    if 'Amount_Coin' not in data.columns:
+        applied_data = data.apply(lambda row: __market_split(row), axis='columns', result_type='expand')
+        data = pd.concat([data, applied_data], axis='columns')
+
+    data['Date'] = pd.to_datetime(data['Date'], format=date_format)
     data.sort_values(by=['Date'], inplace=True, ascending=False)
 
     data = data[_excel_dict['output']['merge']]
@@ -116,6 +143,7 @@ def merge_exchanges():
     # Set columns
     output_cols = _excel_dict['output']['merge']
     df = df_total[output_cols]
+    df = tidy(df)
 
     output_file = _file_dict['merge_exchanges_total_output']
     log_debug.info(f'{output_file = }')
@@ -125,7 +153,7 @@ def merge_exchanges():
 
 
 # TODO:
-#   Apply a more appropriate pattern for merge.py and merge_binance.py connection
+#   Apply a more appropriate pattern for merge.py and merge_exchange.py connection
 def main(file_dict, excel_dict):
     global _file_dict, _excel_dict
     _file_dict, _excel_dict = file_dict, excel_dict
@@ -133,11 +161,25 @@ def main(file_dict, excel_dict):
     # Clean files that would've been output from a previous run and will cause conflict
     __delete_output_files()
 
+    # TODO: Fix Price column calculation for all exchanges
+
     cols = _excel_dict['exchange']['binance']
     merge_binance.trade(cols['trade'])
     merge_binance.deposit(cols['deposit'])
     merge_binance.withdraw(cols['withdraw'])
     merge_binance.total()
+
+    cols = _excel_dict['exchange']['bittrex']
+    merge_bittrex.trade(cols['trade'])
+    merge_bittrex.deposit(cols['deposit'])
+    merge_bittrex.withdraw(cols['withdraw'])
+    merge_bittrex.total()
+
+    cols = _excel_dict['exchange']['poloniex']
+    merge_poloniex.trade(cols['trade'])
+    merge_poloniex.deposit(cols['deposit'])
+    merge_poloniex.withdraw(cols['withdraw'])
+    merge_poloniex.total()
 
     # Once total files are set up for every exchange, merge those
     merge_exchanges()

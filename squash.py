@@ -21,7 +21,11 @@ def squash(df, squash_frequency):
          'Function',
          date_group_key,
          'Market',
+         'CoinTo',
+         'CoinFrom',
          'Type',
+         'Amount_Coin',
+         'Total_Coin',
          'Fee_Coin']
     )
 

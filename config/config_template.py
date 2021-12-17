@@ -1,67 +1,86 @@
-options = {
-    'files': False,
+
+# True / False
+run_options = {
+    # Merge all excel files in the file_dict locations below
+    'merge': True,
+
+    # In merged excel file, multiple transactions from a market order are squashed to reduce data
     'squash': True,
-    'coins': False
+
+    # Adds crypto and fiat money values to squashed file if exists, otherwise to merged file
+    'coin': True
+}
+
+settings_options = {
+    # Delete existing logs generated from previous runs
+    'clean_logs': True,
+
+    # Groups the Date by a frequency so orders 1 second apart are joined together for example. Recommended: 1H
+    'squash_frequency': '1D'  # Frequencies: Y=year, M=month, W=week, D=day, H=hour, T=minute, S=second, L=millisecond
 }
 
 file_dict = {
-    'exchange_1': {
-        'deposit': {
-            'input': r'files/Exchange_1/Deposit/*.xlsx',
-            'output': r'files/Exchange_1/_Results-Deposit.xlsx'
+    'merge_exchange': {
+        'exchange_1': {
+            'trade': {
+                'input': r'files\Exchange_1\Trade\*.xlsx',
+                'output': r'files\Exchange_1\_merge-trade.xlsx'
+            },
+            'deposit': {
+                'input': r'files\Exchange_1\Deposit\*.xlsx',
+                'output': r'files\Exchange_1\_merge-deposit.xlsx'
+            },
+            'withdraw': {
+                'input': r'files\Exchange_1\Withdraw\*.xlsx',
+                'output': r'files\Exchange_1\_merge-withdraw.xlsx'
+            },
+            'total': {
+                'input': r'files\Exchange_1\_merge-*.xlsx',
+                'output': r'files\Exchange_1\_merge-total.xlsx'
+            }
         },
-        'trade': {
-            'input': r'files/Exchange_1/Trade/*.xlsx',
-            'output': r'files/Exchange_1/_Results-Trade.xlsx'
-        },
-        'withdraw': {
-            'input': r'files/Exchange_1/Withdraw/*.xlsx',
-            'output': r'files/Exchange_1/_Results-Withdraw.xlsx'
-        },
-        'total': {
-            'input': r'files/Exchange_1/_Results-*.xlsx',
-            'output': r'files/Exchange_1/_Results.xlsx'
-        },
-        'coin': r'files/Exchange_1/Coin.xlsx'
+        'exchange_2': {
+            'trade': {
+                'input': r'files\Exchange_2\Trade\*.xlsx',
+                'output': r'files\Exchange_2\_merge-trade.xlsx'
+            },
+            'deposit': {
+                'input': r'files\Exchange_2\Deposit\*.xlsx',
+                'output': r'files\Exchange_2\_merge-deposit.xlsx'
+            },
+            'withdraw': {
+                'input': r'files\Exchange_2\Withdraw\*.xlsx',
+                'output': r'files\Exchange_2\_merge-withdraw.xlsx'
+            },
+            'total': {
+                'input': r'files\Exchange_2\_merge-*.xlsx',
+                'output': r'files\Exchange_2\_merge-total.xlsx'
+            }
+        }
     },
-    'exchange_2': {
-        'deposit': {
-            'input': r'files/Exchange_2/Deposit/*.xlsx',
-            'output': r'files/Exchange_2/_Results-Deposit.xlsx'
-        },
-        'trade': {
-            'input': r'files/Exchange_2/Trade/*.xlsx',
-            'output': r'files/Exchange_2/_Results-Trade.xlsx'
-        },
-        'withdraw': {
-            'input': r'files/Exchange_2/Withdraw/*.xlsx',
-            'output': r'files/Exchange_2/_Results-Withdraw.xlsx'
-        },
-        'total': {
-            'input': r'files/Exchange_2/_Results-*.xlsx',
-            'output': r'files/Exchange_2/_Results.xlsx'
-        },
-        'coin': r'files/Exchange_2/Coin.xlsx'
-    },
+    'merge_exchanges_total_output': r'files\_merge.xlsx',
+    'squash': r'files\squash.xlsx',
+    'coin': r'files\coin.xlsx'
 }
 
 excel_dict = {
+    # Expected column headers
     'exchange': {
-        'binance': ['Date', 'Market', 'Type', 'Price', 'Amount', 'Total', 'Fee', 'Fee_Coin']
+        'exchange_1': {
+            'trade': [],
+            'deposit': [],
+            'withdraw': []
+        }
     },
-    'columns': {
-        'files': ['Exchange', 'Function',
-                  'Date', 'Market', 'Type', 'Price', 'Amount', 'Total', 'Fee', 'Fee_Coin'],
-        'squash': ['Exchange', 'Function',
-                   'Date', 'Market', 'Type',
-                   'NumOrders',
-                   'Price', 'Amount', 'Total', 'Fee', 'Fee_Coin'],
-        'coin': ['Exchange', 'Function',
-                 'Date', 'Market',
-                 'CoinTo', 'CoinFrom',
-                 'Type',
 
-                 'Price', 'Amount', 'Total', 'Fee', 'Fee_Coin'],
+    # Program output column headers
+    'output': {
+        'merge': ['Exchange', 'Function', 'Date', 'Market', 'Type', 'Price', 'Amount', 'Total', 'Fee', 'Fee_Coin'],
+        'squash': ['Exchange', 'Function', 'Date', 'Market', 'Type', 'NumOrders',
+                   'Price', 'Amount', 'Total', 'Fee', 'Fee_Coin'],
+        'coin': ['Exchange', 'Function', 'Date', 'Market', 'CoinTo', 'CoinFrom', 'Type', 'NumOrders',
+                 'Price', 'Amount', 'Amount_Coin', 'Total', 'Total_Coin', 'Total_EURO', 'Total_AUD',
+                 'Fee', 'Fee_Coin', 'Fee_EURO', 'Fee_AUD'],
         'cgt': []
     }
 }

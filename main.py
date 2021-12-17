@@ -14,11 +14,12 @@ import functions
 
 # Python files
 import merge
-import coin
 import squash
+import coin
+import cgt
 
 # Config
-import config.config_test as config
+import config.config_prod as config
 
 # Loggers
 log_folder = r'logs'
@@ -90,6 +91,14 @@ def do_tasks():
         log_debug.info(f'Coin started')
 
         coin.main(
+            file_dict=config.file_dict,
+            excel_cols=config.excel_dict['output']
+        )
+
+    if config.run_options['cgt']:
+        log_debug.info(f'CGT started')
+
+        cgt.main(
             file_dict=config.file_dict,
             excel_cols=config.excel_dict['output']
         )
