@@ -1,0 +1,30 @@
+from setuptools import setup, find_packages
+
+setup(
+    name='Crypto taxes',
+    version='1.0.1',
+    packages=['config'],
+    url='https://github.com/PeterGeras/trading-taxes',
+    license='',
+    author='Peter Geras',
+    author_email='petergeras91@gmail.com',
+    description='taxes for crypto',
+    include_package_data=True,
+    install_requires=[
+        "certifi>=2021.10.8",
+        "charset-normalizer>=2.0.9",
+        "cryptocompare>=0.7.5",
+        "CurrencyConverter>=0.16.5",
+        "et-xmlfile>=1.1.0",
+        "idna>=3.3",
+        "numpy>=1.21.4",
+        "openpyxl>=3.0.9",
+        "pandas>=1.3.5",
+        "python-dateutil>=2.8.2",
+        "pytz>=2021.3",
+        "requests>=2.26.0",
+        "six>=1.16.0",
+        "urllib3>=1.26.7",
+        "xlrd>=2.0.1",
+    ],
+)
