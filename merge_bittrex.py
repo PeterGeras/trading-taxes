@@ -12,10 +12,14 @@ log_debug = logging.getLogger('log_debug')
 
 def __setup_trade(data):
 
+    data.insert(loc=0, column='AddressTo', value='-', allow_duplicates=True)
+    data.insert(loc=0, column='AddressFrom', value='-', allow_duplicates=True)
+    data.insert(loc=0, column='TxId', value='-', allow_duplicates=True)
+
     data.rename(columns={'Closed': 'Date'}, inplace=True)
-    data.rename(columns={'Quantity': 'Amount'}, inplace=True)
-    data.rename(columns={'Price': 'Total'}, inplace=True)
-    data.rename(columns={'PricePerUnit': 'Price'}, inplace=True)
+    data.rename(columns={'Quantity': 'Amount_CoinTo'}, inplace=True)
+    data.rename(columns={'Price': 'Amount_CoinFrom'}, inplace=True)
+    data.rename(columns={'PricePerUnit': 'Ratio_CoinFromTo'}, inplace=True)
     data.rename(columns={'Exchange': 'Market'}, inplace=True)
 
     data.rename(columns={'OrderType': 'Type'}, inplace=True)
@@ -23,12 +27,20 @@ def __setup_trade(data):
 
     def get_market_coins(row):
         split = row['Market'].split('-')
-        if row['Type'].casefold() == 'sell':
-            split[0], split[1] = split[1], split[0]  # Swap order
-        return split
+        amount_coin = [row['Amount_CoinTo'], row['Amount_CoinFrom']]
+        price_ratio = row['Ratio_CoinFromTo']
 
-    data['CoinTo'] = data.apply(lambda x: get_market_coins(x)[1], axis=1)
-    data['CoinFrom'] = data.apply(lambda x: get_market_coins(x)[0], axis=1)
+        if row['Type'].casefold() == 'sell':  # Swap order
+            split[0], split[1] = split[1], split[0]
+            amount_coin[0], amount_coin[1] = amount_coin[1], amount_coin[0]
+            price_ratio = 1/price_ratio
+
+        return split[1], split[0], amount_coin[0], amount_coin[1], price_ratio
+
+    data[['CoinTo', 'CoinFrom',
+          'Amount_CoinTo', 'Amount_CoinFrom',
+          'Ratio_CoinFromTo'
+          ]] = data.apply(get_market_coins, axis=1, result_type='expand')
 
     data.rename(columns={'Commission': 'Fee'}, inplace=True)
 
@@ -45,18 +57,18 @@ def __setup_deposit_withdraw(data):
     data.rename(
         columns={
             'Symbol': 'Market',
-            'Quantity': 'Amount'
+            'Address': 'AddressTo',
+            'Quantity': 'Amount_CoinTo',
         },
         inplace=True
     )
 
+    data.insert(loc=0, column='AddressFrom', value='', allow_duplicates=True)
     data.insert(loc=0, column='CoinTo', value=data['Market'], allow_duplicates=True)
     data.insert(loc=0, column='CoinFrom', value=data['Market'], allow_duplicates=True)
-    data.insert(loc=0, column='Price', value=1, allow_duplicates=True)
-    data.insert(loc=0, column='Total', value=data['Amount']*data['Price'], allow_duplicates=True)
+    data.insert(loc=0, column='Ratio_CoinFromTo', value=1, allow_duplicates=True)
+    data.insert(loc=0, column='Amount_CoinFrom', value=data['Amount_CoinTo']*data['Ratio_CoinFromTo'], allow_duplicates=True)
     data.insert(loc=0, column='Fee_Coin', value=data['Market'], allow_duplicates=True)
-
-    data.drop(['TxId', 'Address'], axis=1, inplace=True)
 
     return
 

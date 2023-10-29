@@ -97,6 +97,15 @@ def get_euro_value(base, total, date):
         base = ticker_change[base]
 
     base_to_eur_info = cryptocompare.get_historical_price_hour(base, 'EUR', limit=1, toTs=date)
+
+    if base_to_eur_info is None:
+        log_error.warning(f'Failed to find price for {base}')
+        return None
+
+    try:
+        base_to_eur_info[0]['close']
+    except:
+        pass
     close_price = base_to_eur_info[0]['close']
     if close_price == 0:
         limit_days = 100
@@ -113,6 +122,8 @@ def get_euro_value(base, total, date):
 
 
 def get_aud_value(c, total, date):
+    if total is None:
+        return None
     value = c.convert(total, 'EUR', 'AUD', date)
     value_format = float("{:.2f}".format(value))
 

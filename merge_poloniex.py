@@ -15,15 +15,32 @@ _date_format = '%d/%m/%Y %H:%M'
 
 def __setup_trade(data):
 
+    data.insert(loc=0, column='AddressTo', value='-', allow_duplicates=True)
+    data.insert(loc=0, column='AddressFrom', value='-', allow_duplicates=True)
+    data.insert(loc=0, column='TxId', value='-', allow_duplicates=True)
+
+    data.rename(columns={'Price': 'Ratio_CoinFromTo'}, inplace=True)
+    data.rename(columns={'Amount': 'Amount_CoinTo'}, inplace=True)
+    data.rename(columns={'Total': 'Amount_CoinFrom'}, inplace=True)
+    
     def get_market_coins(row):
         split = row['Market'].split('-')
-        if row['Type'].casefold() == 'sell':
-            split[0], split[1] = split[1], split[0]  # Swap order
-        return split
+        amount_coin = [row['Amount_CoinTo'], row['Amount_CoinFrom']]
+        price_ratio = row['Ratio_CoinFromTo']
+
+        if row['Type'].casefold() == 'sell':  # Swap order
+            split[0], split[1] = split[1], split[0]
+            amount_coin[0], amount_coin[1] = amount_coin[1], amount_coin[0]
+            price_ratio = 1/price_ratio
+
+        return split[0], split[1], amount_coin[0], amount_coin[1], price_ratio
 
     data['Market'] = data['Market'].str.replace('/', '-')
-    data['CoinTo'] = data.apply(lambda x: get_market_coins(x)[0], axis=1)
-    data['CoinFrom'] = data.apply(lambda x: get_market_coins(x)[1], axis=1)
+
+    data[['CoinTo', 'CoinFrom',
+          'Amount_CoinTo', 'Amount_CoinFrom',
+          'Ratio_CoinFromTo'
+          ]] = data.apply(get_market_coins, axis=1, result_type='expand')
 
     data.drop(
         [
@@ -48,18 +65,27 @@ def __setup_trade(data):
 
 def __setup_deposit(data):
 
-    data.rename(columns={'Currency': 'Market'}, inplace=True)
+    data.rename(
+        columns={
+            'Currency': 'Market',
+            'Address': 'AddressTo',
+            'Amount': 'Amount_CoinTo',
+        },
+        inplace=True
+    )
 
     data.insert(loc=0, column='Function', value='Deposit', allow_duplicates=True)
     data.insert(loc=0, column='CoinTo', value=data['Market'], allow_duplicates=True)
     data.insert(loc=0, column='CoinFrom', value=data['Market'], allow_duplicates=True)
+    data.insert(loc=0, column='AddressFrom', value='', allow_duplicates=True)
+    data.insert(loc=0, column='TxId', value='', allow_duplicates=True)
     data.insert(loc=0, column='Type', value='Buy', allow_duplicates=True)
-    data.insert(loc=0, column='Price', value=1, allow_duplicates=True)
-    data.insert(loc=0, column='Total', value=data['Amount']*data['Price'], allow_duplicates=True)
+    data.insert(loc=0, column='Ratio_CoinFromTo', value=1, allow_duplicates=True)
+    data.insert(loc=0, column='Amount_CoinFrom', value=data['Amount_CoinTo']*data['Ratio_CoinFromTo'], allow_duplicates=True)
     data.insert(loc=0, column='Fee', value=0, allow_duplicates=True)
     data.insert(loc=0, column='Fee_Coin', value=data['Market'], allow_duplicates=True)
 
-    data.drop(['Address', 'Status'], axis=1, inplace=True)
+    data.drop(['Status'], axis=1, inplace=True)
 
     return
 
@@ -69,21 +95,26 @@ def __setup_withdraw(data):
     data.rename(
         columns={
             'Currency': 'Market',
-            'Amount': 'Total',
-            'Amount - Fee': 'Amount',
-            'Fee Deducted': 'Fee'
+            'Amount': 'Amount_CoinFrom',
+            'Fee Deducted': 'Fee',
+            'Address': 'AddressTo',
+            'Status': 'TxId'
         },
         inplace=True
     )
 
+    data['TxId'] = data['TxId'].map(lambda x: x.lstrip('COMPLETE: '))
+
     data.insert(loc=0, column='Function', value='Withdraw', allow_duplicates=True)
     data.insert(loc=0, column='CoinTo', value=data['Market'], allow_duplicates=True)
     data.insert(loc=0, column='CoinFrom', value=data['Market'], allow_duplicates=True)
+    data.insert(loc=0, column='AddressFrom', value='', allow_duplicates=True)
     data.insert(loc=0, column='Type', value='Sell', allow_duplicates=True)
-    data.insert(loc=0, column='Price', value=1, allow_duplicates=True)
+    data.insert(loc=0, column='Ratio_CoinFromTo', value=1, allow_duplicates=True)
+    data.insert(loc=0, column='Amount_CoinTo', value=data['Amount_CoinFrom'], allow_duplicates=True)
     data.insert(loc=0, column='Fee_Coin', value=data['Market'], allow_duplicates=True)
 
-    data.drop(['Address', 'Status'], axis=1, inplace=True)
+    data.drop(['Amount - Fee'], axis=1, inplace=True)
 
     return
 

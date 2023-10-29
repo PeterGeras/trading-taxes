@@ -75,12 +75,15 @@ excel_dict = {
 
     # Program output column headers
     'output': {
-        'merge': ['Exchange', 'Function', 'Date', 'Market', 'Type', 'Price', 'Amount', 'Total', 'Fee', 'Fee_Coin'],
-        'squash': ['Exchange', 'Function', 'Date', 'Market', 'Type', 'NumOrders',
-                   'Price', 'Amount', 'Total', 'Fee', 'Fee_Coin'],
-        'coin': ['Exchange', 'Function', 'Date', 'Market', 'CoinTo', 'CoinFrom', 'Type', 'NumOrders',
-                 'Price', 'Amount', 'Amount_Coin', 'Total', 'Total_Coin', 'Total_EURO', 'Total_AUD',
+        'merge': ['Exchange', 'Function', 'Date', 'Market', 'CoinTo', 'CoinFrom', 'AddressFrom', 'AddressTo', 'TxId',
+                  'Type', 'Ratio_CoinFromTo', 'Amount_CoinTo', 'Amount_CoinFrom', 'Fee', 'Fee_Coin'],
+        'squash': ['Exchange', 'Function', 'Date', 'Market', 'CoinTo', 'CoinFrom', 'AddressFrom', 'AddressTo', 'TxId',
+                   'Type', 'NumOrders', 'Ratio_CoinFromTo', 'Amount_CoinTo', 'Amount_CoinFrom', 'Fee', 'Fee_Coin'],
+        'coin': ['Exchange', 'Function', 'Date', 'Market', 'CoinTo', 'CoinFrom', 'AddressFrom', 'AddressTo', 'TxId',
+                 'Type', 'NumOrders', 'Ratio_CoinFromTo', 'Amount_CoinTo', 'Amount_CoinFrom', 'Total_EURO', 'Total_AUD',
                  'Fee', 'Fee_Coin', 'Fee_EURO', 'Fee_AUD'],
-        'cgt': []
+        'cgt': ['Exchange', 'Function', 'Date', 'Market', 'CoinTo', 'CoinFrom', 'AddressFrom', 'AddressTo', 'TxId',
+                'Type', 'NumOrders', 'Price', 'Amount', 'Amount_Coin', 'Total', 'Total_Coin', 'Total_EURO', 'Total_AUD',
+                'Fee', 'Fee_Coin', 'Fee_EURO', 'Fee_AUD', 'TaxableGain']
     }
 }

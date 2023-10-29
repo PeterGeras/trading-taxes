@@ -4,6 +4,7 @@ import numpy as np
 import glob
 import logging
 import warnings
+import importlib
 
 # Python files
 import functions
@@ -95,8 +96,8 @@ def setup(exchange, function):
 
     for f in files:
         df = read_file(f)
-        # Pandas append does not work inplace so needs to be assigned back to itself
-        df_total = df_total.append(df, ignore_index=True)
+        # Pandas concat (previously append) does not work inplace so needs to be assigned back to itself
+        df_total = pd.concat([df_total, df], ignore_index=True)
 
     return df_total
 
@@ -107,6 +108,7 @@ def tidy(data, date_format=None):
         applied_data = data.apply(lambda row: __market_split(row), axis='columns', result_type='expand')
         data = pd.concat([data, applied_data], axis='columns')
 
+    data['AddressTo'] = data['AddressTo'].str.strip()
     data['Date'] = pd.to_datetime(data['Date'], format=date_format)
     data.sort_values(by=['Date'], inplace=True, ascending=False)
 
@@ -138,7 +140,7 @@ def merge_exchanges():
     for f in files:
         df = pd.read_excel(f)
         # Pandas append does not work inplace so needs to be assigned back to itself
-        df_total = df_total.append(df, ignore_index=True)
+        df_total = pd.concat([df_total, df], ignore_index=True)
 
     # Set columns
     output_cols = _excel_dict['output']['merge']
@@ -163,23 +165,13 @@ def main(file_dict, excel_dict):
 
     # TODO: Fix Price column calculation for all exchanges
 
-    cols = _excel_dict['exchange']['binance']
-    merge_binance.trade(cols['trade'])
-    merge_binance.deposit(cols['deposit'])
-    merge_binance.withdraw(cols['withdraw'])
-    merge_binance.total()
-
-    cols = _excel_dict['exchange']['bittrex']
-    merge_bittrex.trade(cols['trade'])
-    merge_bittrex.deposit(cols['deposit'])
-    merge_bittrex.withdraw(cols['withdraw'])
-    merge_bittrex.total()
-
-    cols = _excel_dict['exchange']['poloniex']
-    merge_poloniex.trade(cols['trade'])
-    merge_poloniex.deposit(cols['deposit'])
-    merge_poloniex.withdraw(cols['withdraw'])
-    merge_poloniex.total()
+    for file_name in _excel_dict['exchange'].keys():
+        file = importlib.import_module(f'merge_{file_name}')
+        cols = _excel_dict['exchange'][file_name]
+        file.trade(cols['trade'])
+        file.deposit(cols['deposit'])
+        file.withdraw(cols['withdraw'])
+        file.total()
 
     # Once total files are set up for every exchange, merge those
     merge_exchanges()

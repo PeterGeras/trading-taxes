@@ -23,23 +23,25 @@ def squash(df, squash_frequency):
          'Market',
          'CoinTo',
          'CoinFrom',
+         'AddressFrom',
+         'AddressTo',
+         'TxId',
          'Type',
-         'Amount_Coin',
-         'Total_Coin',
-         'Fee_Coin']
+         'Fee_Coin'],
+        dropna=False
     )
 
     # PEP recommendation replacement of lambda
     # weighted_mean_amount = lambda x: np.average(x, weights=df.loc[x.index, 'Amount'])
     def weighted_mean_amount(x):
-        return np.average(x, weights=df.loc[x.index, 'Amount'])
+        return np.average(x, weights=df.loc[x.index, 'Amount_CoinTo'])
 
     # Aggregating applies a function to the column in the grouped set - like a partition
     df_aggregated = df_grouped.agg(
-        NumOrders=('Price', 'count'),
-        Price=('Price', weighted_mean_amount),
-        Amount=('Amount', 'sum'),
-        Total=('Total', 'sum'),
+        NumOrders=('Ratio_CoinFromTo', 'count'),
+        Ratio_CoinFromTo=('Ratio_CoinFromTo', weighted_mean_amount),
+        Amount_CoinTo=('Amount_CoinTo', 'sum'),
+        Amount_CoinFrom=('Amount_CoinFrom', 'sum'),
         Fee=('Fee', 'sum')
     )
 
