@@ -20,6 +20,15 @@ _file_dict = {}
 _excel_dict = {}
 
 
+def __concat_dataframes(df1, df2):
+    # Future warning about empty dataframes concatenating - https://stackoverflow.com/questions/77254777
+    with warnings.catch_warnings():
+        warnings.simplefilter(action='ignore', category=FutureWarning)
+        df = pd.concat([df1, df2], ignore_index=True)
+
+    return df
+
+
 # Captures all output files that were generated from previous runs that would conflict
 def __get_output_files():
     files = []
@@ -96,8 +105,7 @@ def setup(exchange, function):
 
     for f in files:
         df = read_file(f)
-        # Pandas concat (previously append) does not work inplace so needs to be assigned back to itself
-        df_total = pd.concat([df_total, df], ignore_index=True)
+        df_total = __concat_dataframes(df_total, df)
 
     return df_total
 
@@ -139,8 +147,7 @@ def merge_exchanges():
 
     for f in files:
         df = pd.read_excel(f)
-        # Pandas append does not work inplace so needs to be assigned back to itself
-        df_total = pd.concat([df_total, df], ignore_index=True)
+        df_total = __concat_dataframes(df_total, df)
 
     # Set columns
     output_cols = _excel_dict['output']['merge']

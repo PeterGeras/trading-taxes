@@ -7,7 +7,7 @@ import functions
 # Loggers
 log_debug = logging.getLogger('log_debug')
 
-# global
+# module
 _date_format = '%d/%m/%Y %H:%M'
 
 

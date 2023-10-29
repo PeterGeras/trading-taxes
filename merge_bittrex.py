@@ -102,7 +102,7 @@ def trade(expected_cols):
     __setup_trade(data)
     __setup(data)
 
-    data = merge.tidy(data)
+    data = merge.tidy(data, date_format='%m/%d/%Y %H:%M:%S %p')
     merge.export(data, exchange, function)
 
     return
@@ -123,7 +123,7 @@ def deposit(expected_cols):
     __setup_deposit_withdraw(data)
     __setup(data)
 
-    data = merge.tidy(data)
+    data = merge.tidy(data, date_format="%Y-%m-%d %H:%M:%S")
     merge.export(data, exchange, function)
 
     return
@@ -143,7 +143,7 @@ def withdraw(expected_cols):
     __setup_deposit_withdraw(data)
     __setup(data)
 
-    data = merge.tidy(data)
+    data = merge.tidy(data, date_format="%Y-%m-%d %H:%M:%S")
     merge.export(data, exchange, function)
 
     return
