@@ -12,39 +12,50 @@ log_debug = logging.getLogger('log_debug')
 
 def calculate_cgt(buy_rows, sell_row):
     """
-    Calculate the capital gains tax (CGT) using simplified Australian CGT rules, including fees.
+    Calculate the capital gains tax (CGT) using simplified Australian CGT rules, including fees,
+    split into standard and discount taxable gains.
 
     :param buy_rows: A DataFrame containing buy transaction details.
     :param sell_row: A DataFrame row containing sell transaction details.
-    :return: Taxable gain.
+    :return: tuple of (taxable_gain_standard, taxable_gain_discount).
     """
+    # print(f"{type(sell_row['Date'])=}")
+    # sale_date = datetime.strptime(sell_row['Date'], "%Y-%m-%d %I%p")
+    sale_date = sell_row['Date']
 
-    # Assume all buy transactions are used first-in-first-out (FIFO) for simplicity.
-    total_cost_base = sum(buy_rows['Total_AUD'] + buy_rows['Fee_AUD'])
-    total_units_bought = sum(buy_rows['Amount'])
+    taxable_gain_standard = 0
+    taxable_gain_discount = 0
 
-    avg_cost_base_per_unit = total_cost_base / total_units_bought
+    units_to_be_sold = sell_row['Amount_CoinFrom']
 
-    # Adjusted cost base and capital proceeds for the units being sold
-    units_being_sold = sell_row['Amount']
-    cost_base = avg_cost_base_per_unit * units_being_sold
-    capital_proceeds = sell_row['price'] - sell_row['fee']
+    for _, buy_row in buy_rows.iterrows():
+        if units_to_be_sold <= 0:
+            print(f"BROKE {'-'*10} {sell_row['Exchange']} - {sale_date} - {sell_row['Market']}")
+            break
 
-    # Calculate the capital gain
-    capital_gain = capital_proceeds - cost_base
+        # purchase_date = datetime.strptime(buy_row['Date'], "%Y-%m-%d %H:%M:%S")
+        purchase_date = buy_row['Date']
+        holding_period = (sale_date - purchase_date).days
 
-    # Check holding period for the first buy transaction (FIFO)
-    purchase_date = datetime.strptime(buy_rows.iloc[0]['date'], "%Y-%m-%d")
-    sale_date = datetime.strptime(sell_row['date'], "%Y-%m-%d")
-    holding_period = (sale_date - purchase_date).days
+        # Calculate units from this buy transaction that will be sold
+        if sell_row['Fee_Coin'] == sell_row['CoinFrom']:
+            sale_fee = sell_row['Fee']
+        else:
+            sale_fee = 0
+        units_from_this_buy = min(units_to_be_sold + sale_fee, buy_row['Amount_CoinTo'] - buy_row['Fee'])
 
-    if holding_period > 365:
-        # If asset is held for more than 12 months, apply the 50% discount
-        taxable_gain = capital_gain * 0.5
-    else:
-        taxable_gain = capital_gain
+        cost_base = (buy_row['Total_AUD'] + buy_row['Fee_AUD']) * (units_from_this_buy / buy_row['Amount_CoinTo'])
+        proceeds = (sell_row['Total_AUD'] - sell_row['Fee_AUD']) * (units_from_this_buy / sell_row['Amount_CoinFrom'])
+        gain = proceeds - cost_base
 
-    return taxable_gain
+        if holding_period < 365 or gain < 0:
+            taxable_gain_standard += gain
+        else:
+            taxable_gain_discount += gain/2
+
+        units_to_be_sold -= units_from_this_buy
+
+    return taxable_gain_standard, taxable_gain_discount
 
 
 def cgt_setup(df):
@@ -59,22 +70,31 @@ def cgt_setup(df):
     }
     """
 
-    taxable_gains = []
+    standard_gains = []
+    discount_gains = []
     for i, row in df.iterrows():
         if row['Type'] == 'Sell':
             previous_buys = df[(df['Type'] == 'Buy') &
                                (df['CoinTo'] == row['CoinFrom']) &
-                               (df['Date'] < row['Date'])]
-            taxable_gains.append(calculate_cgt(previous_buys, row))
+                               (df['Date'] <= row['Date'])]
+            gain_standard, gain_discount = calculate_cgt(previous_buys, row)
+            standard_gains.append(gain_standard)
+            discount_gains.append(gain_discount)
         else:
-            taxable_gains.append(None)
+            standard_gains.append(None)
+            discount_gains.append(None)
 
-    df['TaxableGain'] = taxable_gains
+    df['TaxableGain_Standard'] = standard_gains
+    df['TaxableGain_Discounted'] = discount_gains
     return df
 
 
 def sort_setup(df):
-    df.sort_values(by='Date', ascending=False, inplace=True)
+    custom_order = {'Sell': 1, 'Buy': 2, 'Transaction': 3}
+    df.sort_values(by=['Date', 'Type'],
+                   key=lambda col: col.map(custom_order) if col.name == 'Type' else col,
+                   ascending=[False, True],
+                   inplace=True)
 
     return
 

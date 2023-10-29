@@ -1,14 +1,16 @@
-
 # True / False
 run_options = {
     # Merge all excel files in the file_dict locations below
-    'merge': True,
+    'merge': False,
 
     # In merged excel file, multiple transactions from a market order are squashed to reduce data
-    'squash': True,
+    'squash': False,
 
     # Adds crypto and fiat money values to squashed file if exists, otherwise to merged file
-    'coin': True
+    'coin': False,
+
+    # Calculates CGT on the coin output file
+    'cgt': True
 }
 
 settings_options = {
@@ -16,7 +18,7 @@ settings_options = {
     'clean_logs': True,
 
     # Groups the Date by a frequency so orders 1 second apart are joined together for example. Recommended: 1H
-    'squash_frequency': '1D'  # Frequencies: Y=year, M=month, W=week, D=day, H=hour, T=minute, S=second, L=millisecond
+    'squash_frequency': '1H'  # Frequencies: Y=year, M=month, W=week, D=day, H=hour, T=minute, S=second, L=millisecond
 }
 
 file_dict = {
@@ -83,7 +85,7 @@ excel_dict = {
                  'Type', 'NumOrders', 'Ratio_CoinFromTo', 'Amount_CoinTo', 'Amount_CoinFrom', 'Total_EURO', 'Total_AUD',
                  'Fee', 'Fee_Coin', 'Fee_EURO', 'Fee_AUD'],
         'cgt': ['Exchange', 'Function', 'Date', 'Market', 'CoinTo', 'CoinFrom', 'AddressFrom', 'AddressTo', 'TxId',
-                'Type', 'NumOrders', 'Price', 'Amount', 'Amount_Coin', 'Total', 'Total_Coin', 'Total_EURO', 'Total_AUD',
+                'Type', 'NumOrders', 'Ratio_CoinFromTo', 'Amount_CoinTo', 'Amount_CoinFrom', 'Total_EURO', 'Total_AUD',
                 'Fee', 'Fee_Coin', 'Fee_EURO', 'Fee_AUD', 'TaxableGain']
     }
 }
