@@ -76,7 +76,7 @@ def __setup_deposit(data):
 
     data.insert(loc=0, column='Function', value='Deposit', allow_duplicates=True)
     data.insert(loc=0, column='CoinTo', value=data['Market'], allow_duplicates=True)
-    data.insert(loc=0, column='CoinFrom', value=data['Market'], allow_duplicates=True)
+    data.insert(loc=0, column='CoinFrom', value='-', allow_duplicates=True)
     data.insert(loc=0, column='AddressFrom', value='', allow_duplicates=True)
     data.insert(loc=0, column='TxId', value='', allow_duplicates=True)
     data.insert(loc=0, column='Type', value='Buy', allow_duplicates=True)
@@ -106,7 +106,7 @@ def __setup_withdraw(data):
     data['TxId'] = data['TxId'].map(lambda x: x.lstrip('COMPLETE: '))
 
     data.insert(loc=0, column='Function', value='Withdraw', allow_duplicates=True)
-    data.insert(loc=0, column='CoinTo', value=data['Market'], allow_duplicates=True)
+    data.insert(loc=0, column='CoinTo', value='-', allow_duplicates=True)
     data.insert(loc=0, column='CoinFrom', value=data['Market'], allow_duplicates=True)
     data.insert(loc=0, column='AddressFrom', value='', allow_duplicates=True)
     data.insert(loc=0, column='Type', value='Sell', allow_duplicates=True)

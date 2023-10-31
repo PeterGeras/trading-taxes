@@ -133,7 +133,8 @@ def get_aud_value(c, total, date):
 def fiat(df):
     c = CurrencyConverter(fallback_on_missing_rate=True)
 
-    df['Total_EURO'] = df.apply(lambda row: get_euro_value(row['CoinFrom'], row['Amount_CoinFrom'], row['Date']), axis=1)
+    df['Total_EURO'] = df.apply(lambda row: get_euro_value(row['CoinFrom'] if row['CoinFrom'] != '-' else row['CoinTo'],
+                                                           row['Amount_CoinFrom'], row['Date']), axis=1)
     df['Total_AUD'] = df.apply(lambda row: get_aud_value(c, row['Total_EURO'], row['Date']), axis=1)
     df['Fee_EURO'] = df.apply(lambda row: get_euro_value(row['Fee_Coin'], row['Fee'], row['Date']), axis=1)
     df['Fee_AUD'] = df.apply(lambda row: get_aud_value(c, row['Fee_EURO'], row['Date']), axis=1)

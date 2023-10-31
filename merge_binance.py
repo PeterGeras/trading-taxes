@@ -68,8 +68,6 @@ def __setup_deposit_withdraw(data):
     )
 
     data.insert(loc=0, column='AddressFrom', value='', allow_duplicates=True)
-    data.insert(loc=0, column='CoinTo', value=data['Market'], allow_duplicates=True)
-    data.insert(loc=0, column='CoinFrom', value=data['Market'], allow_duplicates=True)
     data.insert(loc=0, column='Ratio_CoinFromTo', value=1, allow_duplicates=True)
     data.insert(loc=0, column='Amount_CoinFrom', value=data['Amount_CoinTo']*data['Ratio_CoinFromTo'], allow_duplicates=True)
     data.insert(loc=0, column='Fee_Coin', value=data['Market'], allow_duplicates=True)
@@ -126,6 +124,8 @@ def deposit(expected_cols):
     # Change columns
     data.insert(loc=0, column='Function', value='Deposit', allow_duplicates=True)
     data.insert(loc=0, column='Type', value='Buy', allow_duplicates=True)
+    data.insert(loc=0, column='CoinTo', value=data['Coin'], allow_duplicates=True)
+    data.insert(loc=0, column='CoinFrom', value='-', allow_duplicates=True)
     __setup_deposit_withdraw(data)
     __setup(data)
 
@@ -146,6 +146,8 @@ def withdraw(expected_cols):
     # Change columns
     data.insert(loc=0, column='Function', value='Withdraw', allow_duplicates=True)
     data.insert(loc=0, column='Type', value='Sell', allow_duplicates=True)
+    data.insert(loc=0, column='CoinTo', value='-', allow_duplicates=True)
+    data.insert(loc=0, column='CoinFrom', value=data['Coin'], allow_duplicates=True)
     __setup_deposit_withdraw(data)
     __setup(data)
 

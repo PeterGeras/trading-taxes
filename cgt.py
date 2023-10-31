@@ -11,19 +11,6 @@ import functions
 log_debug = logging.getLogger('log_debug')
 
 
-def duplicate_id_row(df, id_row):
-    # Find the index of the row
-    index_to_duplicate = df[df['Id'] == id_row].index[0]
-
-    # Split the dataframe at the desired index
-    df1 = df.iloc[:index_to_duplicate+1]  # Up to and including n
-    df2 = df.iloc[index_to_duplicate:]  # From n to the end
-
-    df = pd.concat([df1, df2], ignore_index=True)
-
-    return df
-
-
 def calculate_cgt(buy_rows, sell_row):
     """
     Calculate the capital gains tax (CGT) using simplified Australian CGT rules, including fees,
@@ -48,8 +35,7 @@ def calculate_cgt(buy_rows, sell_row):
 
         buy_ids.append(buy_row['Id'])
         # Calculate units from this buy transaction that will be sold
-        sale_fee = sell_row['Fee'] if sell_row['Fee_Coin'] == sell_row['CoinFrom'] else 0
-        units_from_this_buy = min(units_to_be_sold + sale_fee, buy_row['CoinTo_Remaining'] - buy_row['Fee'])
+        units_from_this_buy = min(units_to_be_sold, buy_row['CoinTo_Remaining'])
 
         cost_base = (buy_row['Total_AUD'] + buy_row['Fee_AUD']) * (units_from_this_buy / buy_row['Amount_CoinTo'])
         proceeds = (sell_row['Total_AUD'] - sell_row['Fee_AUD']) * (units_from_this_buy / sell_row['Amount_CoinFrom'])
